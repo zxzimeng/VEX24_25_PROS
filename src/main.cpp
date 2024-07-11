@@ -79,7 +79,8 @@ class controller_joystick_input {
 			double output = 127.0 * (pow(exponential_factor, normalized) - 1.0) / (exponential_factor - 1.0);
 
 			// map to range [-127, 127]
-			return static_cast<int>(output)*negative_multiplier;
+			curved_value = static_cast<int>(output)*negative_multiplier;
+			return curved_value;
 		}
 
 		int curve_by_power(double power_factor=2){
