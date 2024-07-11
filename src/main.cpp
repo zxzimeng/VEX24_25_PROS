@@ -42,6 +42,7 @@ int display_confirm_return_options(std::vector<std::string> choices){
 
 	std::string choices_text = "";
 
+	//format and print choices in a list 
 	for (auto choice : choices){
 		choices_text += choice += " / ";
 	}
@@ -55,6 +56,7 @@ int display_confirm_return_options(std::vector<std::string> choices){
 	bool done=false;
 	int chosen=-1;
 	while (!done){
+		// left button = 1st option, up = 2nd, right = 3rd
 		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
 			chosen=0;
 		}
@@ -67,6 +69,8 @@ int display_confirm_return_options(std::vector<std::string> choices){
 		}
 
 		if (chosen!=-1 && master.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
+			// once user presses one of the valid selection buttons, and then presses "A", will ask
+			// to confirm selection and displayback selection with either "A" or "B" to go back
 			master.clear_line(0);
 			pros::delay(80);
 			std::string confirm_text=choices[chosen]+" ? A : B";
@@ -78,9 +82,6 @@ int display_confirm_return_options(std::vector<std::string> choices){
 			while(!confirmed){
 				if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
 					master.clear_line(0);
-					// pros::delay(80);
-					// master.print(0, 0, "Confirmed");
-					// pros::delay(250);
 					done=true;
 					confirmed=true;
 				}
@@ -122,6 +123,7 @@ void competition_initialize() {
 		int left_right = display_confirm_return_options(position);
 		int red_blue = display_confirm_return_options(alliance);
 
+		// display all selected options and ask for final confirmation before exit
 		std::string final_conf = (auton_length[short_long_none] + "/" + position[left_right] + "/" + alliance[red_blue] + "?");
 		master.clear_line(0);
 		pros::delay(80);
@@ -137,6 +139,7 @@ void competition_initialize() {
 				confirmed=true;
 				chosen=true;
 
+				// store selected autonomous in global variables
 				switch (short_long_none)
 				{
 				case 0:
@@ -185,6 +188,8 @@ void competition_initialize() {
 	master.print(0, 0, "Ready.");
 	pros::delay(80);
 	master.rumble("..");
+
+	return;
 }
 
 /**
