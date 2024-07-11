@@ -33,7 +33,31 @@
  *
  * For instance, you can do `4_mtr = 50` to set motor 4's target velocity to 50
  */
+
+enum AutonLength{
+    AUTON_SHORT,
+    AUTON_LONG,
+    AUTON_NONE
+};
+
+AutonLength AUTON_LENGTH;
+
+enum AutonPosition{
+    AUTON_LEFT,
+    AUTON_RIGHT
+};
+
+AutonPosition AUTON_POSITION;
+
+enum AutonAlliance{
+    AUTON_RED,
+    AUTON_BLUE
+};
+
+AutonAlliance AUTON_ALLIANCE;
+
 #define PROS_USE_LITERALS
+
 
 #include "api.h"
 
@@ -66,6 +90,7 @@ extern "C" {
 void autonomous(void);
 void initialize(void);
 void disabled(void);
+int display_confirm_return_options(std::vector<std::string> choices);
 void competition_initialize(void);
 void opcontrol(void);
 #ifdef __cplusplus

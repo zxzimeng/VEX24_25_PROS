@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include "ARMS/config.h"
 /**
  * A callback function for LLEMU's center button.
  *
@@ -23,6 +23,7 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
+	arms::init();
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
 
@@ -36,6 +37,68 @@ void initialize() {
  */
 void disabled() {}
 
+int display_confirm_return_options(std::vector<std::string> choices){
+	pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+	std::string choices_text = "";
+
+	for (auto choice : choices){
+		choices_text += choice += " / ";
+	}
+
+	choices_text.pop_back();
+	choices_text.pop_back();
+	choices_text.pop_back();
+
+	master.print(0, 0, choices_text.c_str());
+
+	bool done=false;
+	int chosen=-1;
+	while (!done){
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
+			chosen=0;
+		}
+		else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+		{
+			chosen=1;
+		}
+		else if (choices.size()==3 && master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)){
+			chosen=2;
+		}
+
+		if (chosen!=-1 && master.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
+			master.clear_line(0);
+			pros::delay(80);
+			std::string confirm_text=choices[chosen]+" ? A : B";
+			master.print(0, 0, confirm_text.c_str());
+
+			pros::delay(300);
+
+			bool confirmed=false;
+			while(!confirmed){
+				if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
+					master.clear_line(0);
+					// pros::delay(80);
+					// master.print(0, 0, "Confirmed");
+					// pros::delay(250);
+					done=true;
+					confirmed=true;
+				}
+				
+				if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
+					master.clear_line(0);
+					pros::delay(80);
+					master.print(0, 0, choices_text.c_str());
+					confirmed=true;
+				}
+			}
+		}
+
+		pros::delay(80);
+		}
+
+	return chosen;
+}
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
  * Management System or the VEX Competition Switch. This is intended for
@@ -45,7 +108,84 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+	pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+	bool chosen=false;
+
+	while (!chosen){
+		std::vector<std::string> auton_length = {"Short", "Long", "None"};
+		std::vector<std::string> position = {"Left", "Right"};
+		std::vector<std::string> alliance = {"Red", "Blue"};
+
+		int short_long_none = display_confirm_return_options(auton_length);
+		int left_right = display_confirm_return_options(position);
+		int red_blue = display_confirm_return_options(alliance);
+
+		std::string final_conf = (auton_length[short_long_none] + "/" + position[left_right] + "/" + alliance[red_blue] + "?");
+		master.clear_line(0);
+		pros::delay(80);
+		master.print(0, 0, final_conf.c_str());
+
+		bool confirmed=false;
+		while(!confirmed){
+			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
+				master.clear_line(0);
+				pros::delay(80);
+				master.print(0, 0, "Confirmed");
+				pros::delay(80);
+				confirmed=true;
+				chosen=true;
+
+				switch (short_long_none)
+				{
+				case 0:
+					AUTON_LENGTH=AUTON_SHORT;
+					break;
+				
+				case 1:
+					AUTON_LENGTH=AUTON_LONG;
+					break;
+
+				case 2:
+					AUTON_LENGTH=AUTON_NONE;
+					break;
+				}
+				switch (left_right)
+				{
+				case 0:
+					AUTON_POSITION=AUTON_LEFT;
+					break;
+				
+				case 1:
+					AUTON_POSITION=AUTON_RIGHT;
+					break;
+				}
+				switch (red_blue)
+				{
+				case 0:
+					AUTON_ALLIANCE=AUTON_RED;
+					break;
+				
+				case 1:
+					AUTON_ALLIANCE=AUTON_BLUE;
+					break;
+				}
+			}
+			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
+				master.clear_line(0);
+				confirmed=true;
+			}
+		}
+		pros::delay(80);
+	}
+
+	master.clear_line(0);
+	pros::delay(80);
+	master.print(0, 0, "Ready.");
+	pros::delay(80);
+	master.rumble("..");
+}
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -58,7 +198,9 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+	
+}
 
 class controller_joystick_input {
 	public:
@@ -109,6 +251,8 @@ class controller_joystick_input {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	competition_initialize();
+
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
 	pros::Motor_Group left_motors({8, 5, 7});
 	pros::Motor_Group right_motors({13, 14, 15});

@@ -7,9 +7,8 @@ namespace arms {
 
 // Debug
 #define ODOM_DEBUG 0
-
 // Negative numbers mean reversed motor
-#define LEFT_MOTORS 8, 9, 10
+#define LEFT_MOTORS 8, 5, 7
 #define RIGHT_MOTORS -13, -14, -15
 #define GEARSET pros::E_MOTOR_GEAR_200 // RPM of chassis motors
 
@@ -50,7 +49,7 @@ namespace arms {
 #define MIN_ANGULAR_SPEED 0 // Minimum speed for angular movements
 
 // Auton selector configuration constants
-#define AUTONS "Front", "Back", "Do Nothing" // Names of autonomi, up to 10
+#define AUTONS  // Names of autonomi, up to 10
 #define HUE 0     // Color of theme from 0-359(H part of HSV)
 #define DEFAULT 1 // Default auton selected
 
@@ -68,8 +67,8 @@ inline void init() {
 	pid::init(LINEAR_KP, LINEAR_KI, LINEAR_KD, ANGULAR_KP, ANGULAR_KI, ANGULAR_KD,
 	          TRACKING_KP, MIN_ERROR, LEAD_PCT);
 
-	const char* b[] = {AUTONS, ""};
-	selector::init(HUE, DEFAULT, b);
+	// const char* b[] = {AUTONS, ""};
+	// selector::init(HUE, DEFAULT, b);
 }
 
 } // namespace arms
